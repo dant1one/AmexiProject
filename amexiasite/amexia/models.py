@@ -19,14 +19,14 @@ class Statistic(models.Model):
             self.total_buy += amount
             self.avg_buy = (
                 (self.avg_buy * total_before) + (amount * rate)
-            ) / self.total_buy if self.total_buy > 0 else 0
+            ) / self.total_buy
 
         elif trade == 'sell':
             total_before = self.total_sell
             self.total_sell += amount
             self.avg_sell = (
                 (self.avg_sell * total_before) + (amount * rate)
-            ) / self.total_sell if self.total_sell > 0 else 0
+            ) / self.total_sell
 
         self.profit = (self.total_sell * self.avg_sell) - (self.total_buy * self.avg_buy)
 
