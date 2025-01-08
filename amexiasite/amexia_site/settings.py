@@ -5,9 +5,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = 'django-insecure-tg@yda%on&06#l17_8q^$y664(dqjfx5g46=axs9l-@ru^#=81'
 
-DEBUG = True
+DEBUG = False
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["*"]
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -18,14 +18,17 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'amexia.apps.AmexiaConfig',
     'rest_framework',
+    'corsheaders',
 ]
 
 MIDDLEWARE = [
+
+    'corsheaders.middleware.CorsMiddleware',
+    'django.middleware.common.CommonMiddleware',
+    'django.middleware.csrf.CsrfViewMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.locale.LocaleMiddleware',
-    'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
@@ -99,3 +102,21 @@ REST_FRAMEWORK = {
     'rest_framework.permissions.IsAuthenticated',
     )
 }
+
+
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(days=1),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
+}
+
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:*",
+]
+
+CORS_ALLOW_METHODS = [
+    'GET', 'POST', 'PUT', 'DELETE', 'OPTIONS',
+]
+
+CORS_ALLOW_HEADERS = [
+    'content-type', 'authorization', 'x-requested-with',
+]
