@@ -28,7 +28,6 @@ class Statistic(models.Model):
                 (self.avg_sell * total_before) + (amount * rate)
             ) / self.total_sell if self.total_sell > 0 else 0
 
-        # Обновляем прибыль
         self.profit = (self.total_sell * self.avg_sell) - (self.total_buy * self.avg_buy)
 
         self.save()
@@ -48,7 +47,7 @@ class Exchange(models.Model):
         if self.amount <= 0 or self.rate <= 0:
             raise ValueError("Amount and rate must be positive numbers.")
 
-        self.total = self.amount * self.rate
+        self.total = round(self.amount * self.rate, 2)
 
         statistic, created = Statistic.objects.get_or_create(currency=self.currency)
 
