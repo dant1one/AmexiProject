@@ -4,23 +4,32 @@ from django.contrib.auth.models import User
 
 class Statistic(models.Model):
     currency = models.CharField(max_length=50, unique=True)
-    total_buy = models.IntegerField(default=0)
+    total_buy = models.FloatField(default=0)
     avg_buy = models.FloatField(default=0)
-    total_sell = models.IntegerField(default=0)
+    total_sell = models.FloatField(default=0)
     avg_sell = models.FloatField(default=0)
     profit = models.FloatField(default=0)
 
     def update_statistics(self, amount, rate, trade):
-        if trade == 'buy':
-            self.total_buy += amount
-            if self.total_buy > 0:
-                self.avg_buy = (self.avg_buy * (self.total_buy - amount) + amount * rate) / self.total_buy
-        elif trade == 'sell':
-            self.total_sell += amount
-            if self.total_sell > 0:
-                self.avg_sell = (self.avg_sell * (self.total_sell - amount) + amount * rate) / self.total_sell
+        if amount <= 0 or rate <= 0:
+            raise ValueError("Amount and rate must be positive numbers.")
 
-        self.profit = self.total_sell * self.avg_sell - self.total_buy * self.avg_buy
+        if trade == 'buy':
+            total_before = self.total_buy
+            self.total_buy += amount
+            self.avg_buy = (
+                (self.avg_buy * total_before) + (amount * rate)
+            ) / self.total_buy if self.total_buy > 0 else 0
+
+        elif trade == 'sell':
+            total_before = self.total_sell
+            self.total_sell += amount
+            self.avg_sell = (
+                (self.avg_sell * total_before) + (amount * rate)
+            ) / self.total_sell if self.total_sell > 0 else 0
+
+        # Обновляем прибыль
+        self.profit = (self.total_sell * self.avg_sell) - (self.total_buy * self.avg_buy)
 
         self.save()
 
@@ -36,11 +45,17 @@ class Exchange(models.Model):
     total = models.FloatField(default=0)
 
     def save(self, *args, **kwargs):
+        if self.amount <= 0 or self.rate <= 0:
+            raise ValueError("Amount and rate must be positive numbers.")
+
         self.total = self.amount * self.rate
 
         statistic, created = Statistic.objects.get_or_create(currency=self.currency)
 
-        statistic.update_statistics(self.amount, self.rate, self.trade)
+        try:
+            statistic.update_statistics(self.amount, self.rate, self.trade)
+        except ValueError as e:
+            raise ValueError(f"Failed to update statistics: {e}")
 
         super().save(*args, **kwargs)
 
